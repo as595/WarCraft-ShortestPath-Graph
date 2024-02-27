@@ -20,7 +20,7 @@ from PIL import Image
 import psutil
 
 from utils import *
-from models import Baseline
+from models import Baseline, Combinatorial
 from WarCraftGraph import Warcraft12x12
 
 import platform
@@ -123,10 +123,13 @@ if __name__ == "__main__":
 # -----------------------------------------------------------------------------
 
 	print("Model: {} ({})".format(config_dict['model']['model_name'], device))
-	model = locals()[config_dict['model']['model_name']](in_features=train_data.num_features, 
-														 out_features=12**2, 
-														 lr=config_dict['optimizer']['lr']
-														 ).to(device)
+	model = locals()[config_dict['model']['model_name']](12**2,
+                                                         train_data.num_features,
+														 config_dict['optimizer']['lr'],
+                                                         config_dict['training']['l1_regconst'],
+                                                         config_dict['training']['lambda_val'],
+                                                         config_dict['training']['neighbourhood_fn']
+                                                         ).to(device)
 
 # -----------------------------------------------------------------------------
 
