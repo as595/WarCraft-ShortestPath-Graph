@@ -196,13 +196,13 @@ class Combinatorial(pl.LightningModule):
         assert len(weights.shape) == 3, f"{str(weights.shape)}" # double check dimensions
         
         # pass the predicted weights through the dijkstra algorithm:
-        suggested_paths = self.solver(weights, self.lambda_val, self.neighbourhood_fn) # only positional arguments allowed (no keywords)
+        pred_paths = self.solver(weights, self.lambda_val, self.neighbourhood_fn) # only positional arguments allowed (no keywords)
         
         # flatten paths for accuracy calculations:
-        true_paths = data.y.view(data.y.size()[0], -1)
-        suggested_paths = suggested_paths.view(suggested_paths.size()[0], -1)
-
-        accuracy = exact_match_accuracy(true_paths, suggested_paths)
+        pred_paths = pred_paths.view(pred_paths.size()[0], -1)
+        true_paths = data.y.view(pred_paths.size())
+        
+        accuracy = exact_match_accuracy(true_paths, pred_paths)
         self.log('exact match accuracy [test]', accuracy)
 
         #true_weights = y_test.view(y_test.size()[0], -1)
