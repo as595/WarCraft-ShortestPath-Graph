@@ -14,6 +14,7 @@ from pytorch_lightning.loggers import WandbLogger
 
 from dijkstra import ShortestPath, HammingLoss
 from utils import exact_match_accuracy, exact_cost_accuracy
+from resnet import GCNResnet18
 
 transform = T.Cartesian(cat=False)
 
@@ -27,7 +28,9 @@ class Baseline(pl.LightningModule):
 
         super().__init__()
 
-        self.encoder = Net(in_channels, out_features)
+        #self.encoder = Net(in_channels, out_features)
+        self.encoder = GCNResnet18(in_channels, out_features)
+        
         self.lr = lr
 
     def training_step(self, batch, batch_idx):
