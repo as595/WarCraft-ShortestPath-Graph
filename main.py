@@ -25,9 +25,8 @@ from WarCraftGraph import Warcraft12x12
 
 import platform
 
-
-if not WITH_TORCH_SPLINE_CONV:
-    quit("This example requires 'torch-spline-conv'")
+#if not WITH_TORCH_SPLINE_CONV:
+#    quit("This example requires 'torch-spline-conv'")
 
 if platform.system()=='Darwin':
 	os.environ["GLOO_SOCKET_IFNAME"] = "en0"
@@ -82,7 +81,7 @@ if __name__ == "__main__":
 
 # -----------------------------------------------------------------------------
 
-	os.makedirs(model_dir, exist_ok=True)
+	#os.makedirs(model_dir, exist_ok=True)
 	num_cpus = psutil.cpu_count(logical=True)
 	
 # -----------------------------------------------------------------------------
