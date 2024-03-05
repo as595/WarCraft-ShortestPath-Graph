@@ -28,8 +28,8 @@ class Baseline(pl.LightningModule):
 
         super().__init__()
 
-        #self.encoder = Net(in_channels, out_features)
-        self.encoder = GCNResnet18(in_channels, out_features)
+        self.encoder = Net(in_channels, out_features)
+        #self.encoder = GCNResnet18(in_channels, out_features)
         
         self.lr = lr
 
@@ -62,9 +62,34 @@ class Baseline(pl.LightningModule):
 
         accuracy = exact_match_accuracy(true_paths, pred_paths)
 
-        self.log("test_loss", loss, sync_dist=True)
-        self.log('exact match accuracy [test]', accuracy, sync_dist=True)
-
+        # log the test loss / accuracy:
+        #self.log("test_loss", loss, sync_dist=True)
+        #self.log('exact match accuracy [test]', accuracy, sync_dist=True)
+        self.log("test_loss", loss, sync_dist=True, batch_size=data.x.shape[0])
+        self.log('exact match accuracy [test]', accuracy, sync_dist=True, batch_size=data.x.shape[0])
+        
+        # log some example images:
+        true_paths = true_paths.reshape(true_paths.shape[0], int(sqrt(true_paths.shape[1])), int(sqrt(true_paths.shape[1])))
+        pred_paths = pred_paths.reshape(pred_paths.shape[0], int(sqrt(pred_paths.shape[1])), int(sqrt(pred_paths.shape[1])))
+        
+        n_images = 3
+        #stacked = torch.stack([true_paths, pred_paths])
+        #interleaved = torch.flatten(stacked, start_dim=0, end_dim=1)
+        #images = [img.type(torch.float) for img in interleaved[:2*n_images]]
+        images = [img.type(torch.float) for img in true_paths[:n_images]]
+        captions = [f'True path' for i in range(n_images)]
+        self.logger.log_image(
+                key='true paths',
+                images=images,
+                caption=captions)
+                
+        images = [img.type(torch.float) for img in pred_paths[:n_images]]
+        captions = [f'Predicted path' for i in range(n_images)]
+        self.logger.log_image(
+                key='predicted paths',
+                images=images,
+                caption=captions)
+        
         return
 
     def configure_optimizers(self):
