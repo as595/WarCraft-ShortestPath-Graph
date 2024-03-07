@@ -199,6 +199,8 @@ class Combinatorial(pl.LightningModule):
         # get the output from the CNN:
         output = self.encoder(data)
         output = torch.abs(output)
+        print(output.shape)
+        stop
         
         weights = output.reshape(output.shape[0], int(sqrt(output.shape[1])), int(sqrt(output.shape[1]))) # reshape to match the path maps
         assert len(weights.shape) == 3, f"{str(weights.shape)}" # double check dimensions

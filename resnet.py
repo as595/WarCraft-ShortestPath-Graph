@@ -122,6 +122,7 @@ class CombGCNResNet18(nn.Module):
         super().__init__()
     
         self.resnet_model = GCNResnet18(in_channels, out_features)
+        self.out_features = out_features
         
     def forward(self, data):
     
@@ -139,11 +140,11 @@ class CombGCNResNet18(nn.Module):
         # avg pool: 48 --> 12
         cluster = voxel_grid(data.pos, batch=data.batch, size=8)
         x, _ = avg_pool_x(cluster, data.x, data.batch, size=144)
-        print(x.shape)
-        stop
-        #x = x.mean(dim=1)
         
-        return x
+        # average over channels
+        x = x.mean(dim=1)
+        
+        return x.view(-1, self.out_features)
 
 
 # -----------------------------------------------------------------------------
