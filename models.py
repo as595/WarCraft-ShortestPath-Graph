@@ -38,15 +38,24 @@ class Baseline(pl.LightningModule):
         data = batch # return torch_geometric DataBatch() object
         
         pred_paths = torch.sigmoid(self.encoder(data))
-        true_paths = data.y.view(pred_paths.size())
         
+        if len(data.y.shape)==3:
+            # data.y contains both true weights and true paths
+            true_wgts  = data.y[0,:].view(pred_paths.size())
+            true_paths = data.y[1,:].view(pred_paths.size())
+            
+            accuracy = exact_cost_accuracy(true_paths, pred_paths.round(), true_wgts)
+            self.log("exact cost accuracy [train]", accuracy)
+        else:
+            # data.y only contains true paths
+            true_paths = data.y.view(pred_paths.size())
+            
         criterion = torch.nn.BCELoss()
         loss = criterion(pred_paths, true_paths.to(dtype=torch.float)).mean()
-
-        accuracy = exact_match_accuracy(true_paths, pred_paths.round())
-
         self.log("train_loss", loss)
-        self.log("train_accuracy", accuracy)
+        
+        accuracy = exact_match_accuracy(true_paths, pred_paths.round())
+        self.log("exact match accuracy [train]", accuracy)
 
         return loss
 
@@ -54,13 +63,20 @@ class Baseline(pl.LightningModule):
 
         data = batch # return torch_geometric DataBatch() object
 
-        pred_paths = torch.sigmoid(self.encoder(data))
-        true_paths = data.y.view(pred_paths.size())
+        pred_paths = torch.sigmoid(self.encoder(data)).round()
         
-        criterion = torch.nn.BCELoss()
-        loss = criterion(pred_paths, true_paths.to(dtype=torch.float)).mean()
-
-        accuracy = exact_match_accuracy(true_paths, pred_paths.round())
+        if len(data.y.shape)==3:
+            # data.y contains both true weights and true paths
+            true_wgts  = data.y[0,:].view(pred_paths.size())
+            true_paths = data.y[1,:].view(pred_paths.size())
+            
+            accuracy = exact_cost_accuracy(true_paths, pred_paths, true_wgts)
+            self.log("exact cost accuracy [train]", accuracy)
+        else:
+            # data.y only contains true paths
+            true_paths = data.y.view(pred_paths.size())
+        
+        accuracy = exact_match_accuracy(true_paths, pred_paths)
 
         # log the test loss / accuracy:
         #self.log("test_loss", loss, sync_dist=True)
