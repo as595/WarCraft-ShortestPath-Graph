@@ -28,8 +28,8 @@ class Baseline(pl.LightningModule):
 
         super().__init__()
 
-        self.encoder = Net(in_channels, out_features)
-        #self.encoder = GCNResnet18(in_channels, out_features)
+        #self.encoder = Net(in_channels, out_features)
+        self.encoder = GCNResnet18(in_channels, out_features)
         
         self.lr = lr
 
