@@ -122,8 +122,7 @@ class CombGCNResNet18(nn.Module):
         super().__init__()
     
         self.resnet_model = GCNResnet18(in_channels, out_features)
-        self.model = Net(in_channels, out_features)
-
+        
     def forward(self, data):
     
         data.x = self.resnet_model.conv1(data.x, data.edge_index)
