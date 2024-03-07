@@ -19,6 +19,7 @@ data_type = 'Warcraft12x12'
 data_dir = '/Users/ascaife/SRC/GITHUB/WarCraft-ShortestPath-Graph/data/'
 base_folder = 'warcraft_shortest_path_oneskin/12x12'
 batch_size = 2000
+with_weights = True
 
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
@@ -60,7 +61,10 @@ if __name__ == "__main__":
             data.edge_index = edge_index_img
             data.edge_attr = torch.ones(size=(edge_index_img.shape[1],1))
             data.pos = pos_img
-            data.y = x_pth
+            if with_weights:
+                data.y = torch.stack((x_wgt, x_pth.type(torch.float)))
+            else:
+                data.y = x_pth
             
             graphs.append(data)
             
