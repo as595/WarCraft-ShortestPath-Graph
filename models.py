@@ -43,7 +43,7 @@ class Baseline(pl.LightningModule):
         criterion = torch.nn.BCELoss()
         loss = criterion(pred_paths, true_paths.to(dtype=torch.float)).mean()
 
-        accuracy = exact_match_accuracy(true_paths, pred_paths)
+        accuracy = exact_match_accuracy(true_paths, pred_paths.round())
 
         self.log("train_loss", loss)
         self.log("train_accuracy", accuracy)
@@ -60,7 +60,7 @@ class Baseline(pl.LightningModule):
         criterion = torch.nn.BCELoss()
         loss = criterion(pred_paths, true_paths.to(dtype=torch.float)).mean()
 
-        accuracy = exact_match_accuracy(true_paths, pred_paths)
+        accuracy = exact_match_accuracy(true_paths, pred_paths.round())
 
         # log the test loss / accuracy:
         #self.log("test_loss", loss, sync_dist=True)
@@ -70,7 +70,7 @@ class Baseline(pl.LightningModule):
         
         # log some example images:
         true_paths = true_paths.reshape(true_paths.shape[0], int(sqrt(true_paths.shape[1])), int(sqrt(true_paths.shape[1])))
-        pred_paths = pred_paths.reshape(pred_paths.shape[0], int(sqrt(pred_paths.shape[1])), int(sqrt(pred_paths.shape[1])))
+        pred_paths = pred_paths.reshape(pred_paths.shape[0], int(sqrt(pred_paths.shape[1])), int(sqrt(pred_paths.shape[1]))).round()
         
         n_images = 3
         #stacked = torch.stack([true_paths, pred_paths])
