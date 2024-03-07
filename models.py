@@ -186,7 +186,8 @@ class Combinatorial(pl.LightningModule):
         self.lambda_val = lambda_val
         self.l1_regconst = l1_regconst
 
-        self.encoder = CombNet(out_features, in_channels)
+        #self.encoder = CombNet(out_features, in_channels)
+        self.encoder = CombGCNResNet18(out_features, in_channels)
         self.solver = ShortestPath.apply
 
         self.lr = lr
