@@ -235,8 +235,10 @@ class Combinatorial(pl.LightningModule):
         # get the output from the CNN:
         output = self.encoder(data)
         output = torch.abs(output)
+        
+        N = int(sqrt(output.shape[1]))
 
-        weights = output.reshape(output.shape[0], int(sqrt(output.shape[1])), int(sqrt(output.shape[1]))) # reshape to match the path maps
+        weights = output.reshape(output.shape[0], N, N) # reshape to match the path maps
         assert len(weights.shape) == 3, f"{str(weights.shape)}" # double check dimensions
         
         # pass the predicted weights through the dijkstra algorithm:
@@ -249,9 +251,24 @@ class Combinatorial(pl.LightningModule):
         accuracy = exact_match_accuracy(true_paths, pred_paths)
         self.log('exact match accuracy [test]', accuracy)
 
-        #true_weights = y_test.view(y_test.size()[0], -1)
-        #accuracy = exact_cost_accuracy(true_paths, suggested_paths, true_weights)
-        #self.log('exact cost accuracy [test]', accuracy)
+        # log some example images:
+        true_paths = true_paths.reshape(true_paths.shape[0], N, N)
+        pred_paths = pred_paths.reshape(pred_paths.shape[0], N, N).round()
+        
+        n_images = 3
+        images = [img.type(torch.float) for img in true_paths[:n_images]]
+        captions = [f'True path' for i in range(n_images)]
+        self.logger.log_image(
+                key='true paths',
+                images=images,
+                caption=captions)
+                
+        images = [img.type(torch.float) for img in pred_paths[:n_images]]
+        captions = [f'Predicted path' for i in range(n_images)]
+        self.logger.log_image(
+                key='predicted paths',
+                images=images,
+                caption=captions)
 
         return
 
@@ -280,6 +297,40 @@ class CombNet(nn.Module):
     def forward(self, x):
     
         x = self.model(x)
+        
+        return x
+
+
+# -----------------------------------------------------------------------------
+
+class CombGCNResNet18(nn.Module):
+
+    def __init__(self, out_features, in_channels):
+    
+        super().__init__()
+    
+        self.resnet_model = GCNResnet18(in_channels, out_features)
+        self.model = Net(in_channels, out_features)
+
+    def forward(self, x):
+    
+        data.x = self.resnet_model.conv1(data.x, data.edge_index)
+        data.x = self.resnet_model.bn1(data.x)
+        data.x = self.resnet_model.relu(data.x)
+        
+        # max pool: 96 --> 48
+        cluster = voxel_grid(data.pos, batch=data.batch, size=2)
+        data.edge_attr = None
+        data = max_pool(cluster, data, transform=transform)
+        
+        data = self.resnet_model.layer1(data)
+        
+        # avg pool: 48 --> 12
+        cluster = voxel_grid(data.pos, batch=data.batch, size=8)
+        x, _ = avg_pool_x(cluster, data.x, data.batch, size=144)
+        print(x.shape)
+        stop
+        #x = x.mean(dim=1)
         
         return x
 
