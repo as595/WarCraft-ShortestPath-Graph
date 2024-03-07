@@ -28,7 +28,8 @@ with_weights = True
 if __name__ == "__main__":
 
     # specify the image data:
-    transform = transforms.Compose([transforms.ToTensor()])
+    normalise= transforms.Normalize((0.2411, 0.2741, 0.1212), (0.1595, 0.0650, 0.1601))
+    transform = transforms.Compose([transforms.ToTensor(), normalise])
     dataset = locals()[data_type](data_dir, train=True, transform=transform)
 
     # create a data loader:
