@@ -114,3 +114,37 @@ class GCNResnet18(nn.Module):
 
 # -------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------
+
+class CombGCNResNet18(nn.Module):
+
+    def __init__(self, out_features, in_channels):
+    
+        super().__init__()
+    
+        self.resnet_model = GCNResnet18(in_channels, out_features)
+        self.model = Net(in_channels, out_features)
+
+    def forward(self, data):
+    
+        data.x = self.resnet_model.conv1(data.x, data.edge_index)
+        data.x = self.resnet_model.bn1(data.x)
+        data.x = self.resnet_model.relu(data.x)
+        
+        # max pool: 96 --> 48
+        cluster = voxel_grid(data.pos, batch=data.batch, size=2)
+        data.edge_attr = None
+        data = max_pool(cluster, data, transform=transform)
+        
+        data = self.resnet_model.layer1(data)
+        
+        # avg pool: 48 --> 12
+        cluster = voxel_grid(data.pos, batch=data.batch, size=8)
+        x, _ = avg_pool_x(cluster, data.x, data.batch, size=144)
+        print(x.shape)
+        stop
+        #x = x.mean(dim=1)
+        
+        return x
+
+
+# -----------------------------------------------------------------------------
